@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文字檔匯入聽力連播大挑戰 🎧</title>
+    <title>妞寶聽力連播大挑戰</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,7 +19,7 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
             text-align: center;
         }
@@ -97,13 +97,21 @@
             background-color: #117a65;
             transform: scale(1.02);
         }
+        .repeat-btn {
+            background-color: #e67e22;
+            margin-bottom: 10px;
+        }
+        .repeat-btn:hover {
+            background-color: #d35400;
+        }
         .next-immediately-btn {
             background-color: #27ae60;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .next-immediately-btn:hover {
             background-color: #219653;
         }
+        /* 答案區域調整為單欄式，方便容納中文字義 */
         .answer-sheet {
             text-align: left;
             margin-top: 25px;
@@ -111,16 +119,33 @@
             background-color: #f4f6f7;
             border-radius: 10px;
         }
-        .answer-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        .answer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             font-size: 1.2rem;
             margin-top: 10px;
         }
         .answer-item {
-            padding: 5px;
+            padding: 8px 12px;
             border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .english-part {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+        .chinese-part {
+            color: #7f8c8d;
+            font-size: 1.05rem;
+            text-align: right;
+            max-width: 60%;
         }
         .hidden { display: none; }
     </style>
@@ -128,25 +153,25 @@
 <body>
 
 <div class="container">
-    <h1>檔案匯入聽力連播 🎧</h1>
-    <p style="color: #7f8c8d; margin-bottom: 20px;">載入單字文字檔，輕鬆舉辦隨機聽寫測驗</p>
+    <h1>檔案匯入聽力連播 ??</h1>
+    <p style="color: #7f8c8d; margin-bottom: 20px;">載入含中文說明的單字檔，考完即可進行完整複習</p>
 
     <div id="setup-screen">
         <div class="setup-group">
-            <label for="file-input">📂 1. 請選擇單字文字檔 (.txt)：</label>
+            <label for="file-input"> 1. 請選擇單字文字檔 (.txt)：</label>
             <input type="file" id="file-input" accept=".txt" onchange="handleFileSelect()">
-            <div class="word-count-hint" id="count-display">ℹ️ 尚未載入檔案 (支援以 Enter 或逗號隔開的單字檔)</div>
+            <div class="word-count-hint" id="count-display"> 尚未載入檔案 (每行請包含：英文單字 中文說明)</div>
         </div>
 
         <div class="setup-group">
-            <label for="time-select">⏱️ 2. 請選擇每題最多等待時間：</label>
+            <label for="time-select">2. 請選擇每題最多等待時間：</label>
             <select id="time-select">
                 <option value="10">10 秒</option>
                 <option value="15" selected>15 秒</option>
                 <option value="20">20 秒</option>
             </select>
         </div>
-        <button id="start-btn" onclick="startListeningTest()" disabled style="background-color: #bdc3c7; cursor: not-allowed;">請先選擇單字檔 📁</button>
+        <button id="start-btn" onclick="startListeningTest()" disabled style="background-color: #bdc3c7; cursor: not-allowed;">請先選擇單字檔 </button>
     </div>
 
     <div id="quiz-screen" class="hidden">
@@ -156,27 +181,28 @@
             <p id="status-text">即將播放發音...</p>
         </div>
         
-        <button id="skip-wait-btn" class="next-immediately-btn" onclick="skipToNextQuestion()">寫好了，直接下一題 ➔</button>
-        <button id="stop-btn" style="background-color: #e74c3c;" onclick="stopTest()">緊急停止測驗 🛑</button>
+        <button id="repeat-voice-btn" class="repeat-btn" onclick="repeatCurrentWord()"> 沒聽清楚，再聽一次發音</button>
+        <button id="skip-wait-btn" class="next-immediately-btn" onclick="skipToNextQuestion()">寫好了，直接下一題 ?</button>
+        <button id="stop-btn" style="background-color: #e74c3c;" onclick="stopTest()">緊急停止測驗 ??</button>
     </div>
 
     <div id="result-screen" class="hidden">
-        <h2>🎉 聽寫測驗結束！ 🎉</h2>
-        <p>每題 10 分，總計 100 分。快拿出紅筆來對答案吧：</p>
+        <h2> 聽寫測驗結束！ </h2>
+        <p>每題 10 分，總計 100 分。拿出紅筆，核對英文拼字與中文意思吧：</p>
         
         <div class="answer-sheet">
-            <h3>📝 正確答案卷：</h3>
-            <div class="answer-grid" id="answer-list">
+            <h3>?? 正確答案卷與複習本：</h3>
+            <div class="answer-list" id="answer-list">
                 </div>
         </div>
         
         <br>
-        <button onclick="resetGame()">重新考一次 🔄</button>
+        <button onclick="resetGame()">重新考一次</button>
     </div>
 </div>
 
 <script>
-    let userWordBank = [];
+    let userWordBank = []; // 存放物件 { english: '...', chinese: '...' }
     let selectedWords = [];
     let currentIndex = 0;
     let intervalSeconds = 15;
@@ -184,7 +210,6 @@
     let initialDelayTimeout = null;
     let countdownValue = 0;
 
-    // 處理檔案選取與讀取
     function handleFileSelect() {
         const fileInput = document.getElementById('file-input');
         if (fileInput.files.length === 0) return;
@@ -192,7 +217,6 @@
         const file = fileInput.files[0];
         const reader = new FileReader();
 
-        // 預設先用全球通用的 UTF-8 讀取
         reader.onload = function(e) {
             const text = e.target.result;
             processText(text);
@@ -200,54 +224,72 @@
         reader.readAsText(file, 'UTF-8');
     }
 
-    // 解析文字內容
     function processText(text) {
         const startBtn = document.getElementById('start-btn');
         const countDisplay = document.getElementById('count-display');
 
-        // 將文字依照 換行(\n, \r) 或是 逗號、分號 進行切割
-        userWordBank = text.split(/[\n\r,;，；]+/)
-                           .map(word => word.trim())
-                           .filter(word => word.length > 0);
+        // 先依行切割
+        let lines = text.split(/[\n\r]+/);
+        userWordBank = [];
 
-        // 【檢查點】如果發現第一個字看起來像亂碼或解析失敗，嘗試改用 Windows 常見的 Big5 重新讀取一次
-        if (userWordBank.length > 0 && /[\uFFFD]/.test(userWordBank[0])) {
+        lines.forEach(line => {
+            line = line.trim();
+            if (line.length === 0) return;
+
+            // 支援使用 兩個以上空格、Tab、或是直線符號 | 來區分英文與中文
+            // 如果沒有中文，就只抓英文
+            let parts = line.split(/[ \t\s]{2,}|[|]+/);
+            
+            // 備用方案：如果上面沒切成功（例如只有一個空格），找第一個中文字或括號的位置切開
+            if (parts.length === 1) {
+                let match = line.match(/[(\u4e00-\u9fa5]/);
+                if (match) {
+                    let idx = match.index;
+                    parts = [line.substring(0, idx).trim(), line.substring(idx).trim()];
+                }
+            }
+
+            let english = parts[0] ? parts[0].trim() : "";
+            let chinese = parts[1] ? parts[1].trim() : "(暫無中文說明)";
+
+            if (english.length > 0) {
+                userWordBank.push({ english: english, chinese: chinese });
+            }
+        });
+
+        // 亂碼檢查（同前版）
+        if (userWordBank.length > 0 && /[\uFFFD]/.test(userWordBank[0].english)) {
             const fileInput = document.getElementById('file-input');
             const file = fileInput.files[0];
             const retryReader = new FileReader();
             retryReader.onload = function(e) {
-                const retryText = e.target.result;
-                userWordBank = retryText.split(/[\n\r,;，；]+/)
-                                       .map(word => word.trim())
-                                       .filter(word => word.length > 0);
-                renderStatus(countDisplay, startBtn);
+                processText(e.target.result); // 用 Big5 重讀，但此處簡化處理??，直接重導
             };
             retryReader.readAsText(file, 'Big5');
-        } else {
-            renderStatus(countDisplay, startBtn);
+            return;
         }
+
+        renderStatus(countDisplay, startBtn);
     }
 
-    // 更新介面狀態
     function renderStatus(countDisplay, startBtn) {
         if (userWordBank.length >= 10) {
-            countDisplay.innerText = `✅ 成功載入！偵測到單字量：${userWordBank.length} 個。第一個單字為: "${userWordBank[0]}"`;
+            countDisplay.innerText = `? 成功載入！偵測到單字量：${userWordBank.length} 個。第一個字：${userWordBank[0].english} -> ${userWordBank[0].chinese}`;
             countDisplay.style.color = "#27ae60";
             startBtn.disabled = false;
             startBtn.style.backgroundColor = "#16a085";
             startBtn.style.cursor = "pointer";
-            startBtn.innerText = "開始聽寫測驗（隨機抽 10 題） 🚀";
+            startBtn.innerText = "開始聽寫測驗（隨機抽 10 題） ??";
         } else {
-            countDisplay.innerText = `❌ 讀取失敗或單字太少：目前僅偵測到 ${userWordBank.length} 個字 (必須至少 10 個字)。`;
+            countDisplay.innerText = `? 讀取失敗：目前僅偵測到 ${userWordBank.length} 個有效單字 (必須至少 10 個字)。`;
             countDisplay.style.color = "#c0392b";
             startBtn.disabled = true;
             startBtn.style.backgroundColor = "#bdc3c7";
             startBtn.style.cursor = "not-allowed";
-            startBtn.innerText = "請先選擇正確的單字檔 📁";
+            startBtn.innerText = "請先選擇正確的單字檔 ??";
         }
     }
 
-    // 電子提示音 (叮咚)
     function playDingDong() {
         if (!window.AudioContext && !window.webkitAudioContext) return;
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -280,11 +322,8 @@
 
     function startListeningTest() {
         intervalSeconds = parseInt(document.getElementById('time-select').value);
-        
-        // 隨機抽 10 題
         const shuffled = [...userWordBank].sort(() => 0.5 - Math.random());
         selectedWords = shuffled.slice(0, 10);
-        
         currentIndex = 0;
 
         document.getElementById('setup-screen').classList.add('hidden');
@@ -303,16 +342,17 @@
         clearTimeout(initialDelayTimeout);
 
         document.getElementById('quiz-progress').innerText = `第 ${currentIndex + 1} / 10 題`;
-        document.getElementById('status-text').innerText = "🔊 正在發音...";
+        document.getElementById('status-text').innerText = "?? 正在發音...";
         document.getElementById('timer-display').innerText = intervalSeconds;
         
-        speakWord(selectedWords[currentIndex]);
+        // 只播放英文部分的發音
+        speakWord(selectedWords[currentIndex].english);
 
         countdownValue = intervalSeconds;
         
         initialDelayTimeout = setTimeout(() => {
             playDingDong(); 
-            document.getElementById('status-text').innerText = "✍️ 請在紙上寫下單字...";
+            document.getElementById('status-text').innerText = "?? 請在紙上寫下單字...";
             
             timerInterval = setInterval(() => {
                 countdownValue--;
@@ -326,6 +366,10 @@
             }, 1000);
 
         }, 1800);
+    }
+
+    function repeatCurrentWord() {
+        speakWord(selectedWords[currentIndex].english);
     }
 
     function skipToNextQuestion() {
@@ -362,11 +406,14 @@
         const answerListDiv = document.getElementById('answer-list');
         answerListDiv.innerHTML = "";
         
-        selectedWords.forEach((word, index) => {
-            const item = document.createElement('div');
-            item.className = "answer-item";
-            item.innerHTML = `<strong>(${index + 1})</strong> ${word}`;
-            answerListDiv.appendChild(item);
+        selectedWords.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = "answer-item";
+            row.innerHTML = `
+                <span class="english-part"><strong>(${index + 1})</strong> ${item.english}</span>
+                <span class="chinese-part">${item.chinese}</span>
+            `;
+            answerListDiv.appendChild(row);
         });
     }
 
@@ -375,7 +422,6 @@
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('setup-screen').classList.remove('hidden');
         
-        // 重新整理目前的檔案
         const fileInput = document.getElementById('file-input');
         if (fileInput.files.length > 0) {
             handleFileSelect();
